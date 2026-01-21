@@ -4,10 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Package, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext.jsx';
-import { productsAPI } from '../lib/api';
+import { productsAPI, categoriesAPI } from '../lib/api';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -19,11 +19,23 @@ const Products = () => {
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Check for search/category from URL params
+    const searchParam = searchParams.get('search');
+    const categoryParam = searchParams.get('category');
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+    
     fetchProducts();
     fetchCategories();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     filterProducts();
@@ -46,9 +58,10 @@ const Products = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await productsAPI.getCategories();
+      const response = await categoriesAPI.getCategories();
       console.log('Categories response:', response.data);
-      setCategories(response.data.data || response.data);
+      const categoryNames = response.data.data?.map(cat => cat.name) || [];
+      setCategories(categoryNames);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -80,6 +93,12 @@ const Products = () => {
     }
     addToCart(product, 1);
     alert(`${product.name} added to cart!`);
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return 'https://via.placeholder.com/300x300?text=No+Image';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `http://localhost:5000${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
   };
 
   if (loading) {
@@ -175,13 +194,7 @@ const Products = () => {
                         {/* Product Image */}
                         <div className="bg-gray-200 aspect-square flex items-center justify-center overflow-hidden rounded-t-lg">
                           <img
-                            src={
-                              product.image_url 
-                                ? (product.image_url.startsWith('http') 
-                                    ? product.image_url 
-                                    : `http://localhost:5000${product.image_url}`)
-                                : 'https://via.placeholder.com/300x300?text=No+Image'
-                            }
+                            src={getImageUrl(product.image_url)}
                             alt={product.name}
                             className="w-full h-full object-cover hover:scale-105 transition-transform"
                             onError={(e) => {

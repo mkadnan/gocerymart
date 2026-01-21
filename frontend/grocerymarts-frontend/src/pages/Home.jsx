@@ -1,35 +1,62 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Gift, Package, Shield, ShoppingCart, Truck } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Gift, Package, Shield, ShoppingCart, Truck, Search, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext.jsx';
-import { productsAPI } from '../lib/api';
+import { productsAPI, categoriesAPI } from '../lib/api';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const { isAuthenticated } = useAuth(); // ✅ boolean (not a function)
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await productsAPI.getProducts({ limit: 6 });
-        const activeProducts = response.data.products.filter(p => p.is_active);
+        // Fetch categories
+        const categoriesResponse = await categoriesAPI.getCategories();
+        setCategories(categoriesResponse.data.data || []);
+        
+        // Fetch featured products
+        const productsResponse = await productsAPI.getProducts({ limit: 6 });
+        const activeProducts = productsResponse.data.products.filter(p => p.is_active);
         setFeaturedProducts(activeProducts);
       } catch (error) {
-        console.error('Error fetching featured products:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFeaturedProducts();
+    fetchData();
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleCategorySelect = (categoryName) => {
+    setSelectedCategory(categoryName);
+    navigate(`/products?category=${encodeURIComponent(categoryName)}`);
+  };
 
   const handleAddToCart = (product) => {
     if (!isAuthenticated) {   
@@ -37,6 +64,12 @@ const Home = () => {
       return;
     }
     addToCart(product, 1);
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `http://localhost:5000${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
   };
 
   return (
@@ -52,6 +85,26 @@ const Home = () => {
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               Get the freshest groceries delivered to your doorstep. Earn credits through our referral program and save on every purchase.
             </p>
+            
+            {/* Search Bar */}
+            <form onSubmit={handleSearch} className="mb-8 max-w-2xl mx-auto">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search for products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 py-2 h-10"
+                  />
+                </div>
+                <Button type="submit" size="lg">
+                  Search
+                </Button>
+              </div>
+            </form>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" onClick={() => navigate('/products')}>
                 <ShoppingCart className="mr-2 h-5 w-5" />
@@ -65,6 +118,57 @@ const Home = () => {
                 </Button>
               )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-6 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-4 overflow-x-auto pb-4">
+            <Button
+              variant={selectedCategory === '' ? 'default' : 'outline'}
+              onClick={() => {
+                setSelectedCategory('');
+                navigate('/products');
+              }}
+              className="whitespace-nowrap"
+            >
+              All Categories
+            </Button>
+            
+            {/* Horizontal Categories */}
+            {categories.slice(0, 5).map((category) => (
+              <Button
+                key={category._id}
+                variant={selectedCategory === category.name ? 'default' : 'outline'}
+                onClick={() => handleCategorySelect(category.name)}
+                className="whitespace-nowrap"
+              >
+                {category.name}
+              </Button>
+            ))}
+            
+            {/* Categories Dropdown */}
+            {categories.length > 5 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="whitespace-nowrap">
+                    More Categories <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {categories.slice(5).map((category) => (
+                    <DropdownMenuItem
+                      key={category._id}
+                      onClick={() => handleCategorySelect(category.name)}
+                    >
+                      {category.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </section>
@@ -132,10 +236,18 @@ const Home = () => {
               {featuredProducts.map((product) => (
                 <Card key={product._id} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
-                    <div className="bg-gray-100 h-48 rounded-lg mb-4 flex items-center justify-center">
-                      {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="h-40 w-40 object-cover rounded" />
-                      ) : (
+                    <div className="bg-gray-100 h-48 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                      {product.image_url ? (
+                        <img 
+                          src={getImageUrl(product.image_url)} 
+                          alt={product.name} 
+                          className="h-full w-full object-cover rounded hover:scale-105 transition-transform"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+                      {!product.image_url && (
                         <Package className="h-16 w-16 text-gray-400" />
                       )}
                     </div>
