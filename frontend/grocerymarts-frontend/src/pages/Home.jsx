@@ -73,6 +73,11 @@ const Home = () => {
     addToCart(product, 1);
   };
 
+  const capitalizeCategory = (str) => {
+    if (!str) return '';
+    return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     if (imageUrl.startsWith('http')) return imageUrl;
@@ -152,7 +157,7 @@ const Home = () => {
                 onClick={() => handleCategorySelect(category.name)}
                 className="whitespace-nowrap"
               >
-                {category.name}
+                {capitalizeCategory(category.name)}
               </Button>
             ))}
             
@@ -170,7 +175,7 @@ const Home = () => {
                       key={category._id}
                       onClick={() => handleCategorySelect(category.name)}
                     >
-                      {category.name}
+                      {capitalizeCategory(category.name)}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -260,7 +265,7 @@ const Home = () => {
                     </div>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <Badge variant="secondary">{product.category}</Badge>
+                      <Badge variant="secondary">{capitalizeCategory(product.category)}</Badge>
                     </div>
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {product.description || 'Fresh and high-quality product'}

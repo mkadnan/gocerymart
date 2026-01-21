@@ -105,6 +105,12 @@ const Products = () => {
     return `http://localhost:5000${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
   };
 
+  // Capitalize first letter of category name for display
+  const capitalizeCategory = (str) => {
+    if (!str) return '';
+    return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
@@ -171,7 +177,7 @@ const Products = () => {
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         className="mr-2"
                       />
-                      <span className="text-sm">{cat}</span>
+                      <span className="text-sm">{capitalizeCategory(cat)}</span>
                     </label>
                   ))}
                 </div>
@@ -211,7 +217,7 @@ const Products = () => {
                         <div className="p-4">
                           <div className="flex items-start justify-between mb-2">
                             <h3 className="font-semibold text-lg text-gray-900 flex-1">{product.name}</h3>
-                            <Badge variant="outline">{product.category}</Badge>
+                            <Badge variant="outline">{capitalizeCategory(product.category)}</Badge>
                           </div>
 
                           {product.description && (
