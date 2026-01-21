@@ -60,7 +60,11 @@ const Products = () => {
     try {
       const response = await categoriesAPI.getCategories();
       console.log('Categories response:', response.data);
-      const categoryNames = response.data.data?.map(cat => cat.name) || [];
+      const categoryData = response.data.data || [];
+      // API returns array of strings (category names)
+      const categoryNames = Array.isArray(categoryData)
+        ? categoryData.map(cat => typeof cat === 'string' ? cat : cat.name)
+        : [];
       setCategories(categoryNames);
     } catch (error) {
       console.error('Error fetching categories:', error);

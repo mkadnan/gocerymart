@@ -30,7 +30,14 @@ const Home = () => {
       try {
         // Fetch categories
         const categoriesResponse = await categoriesAPI.getCategories();
-        setCategories(categoriesResponse.data.data || []);
+        const categoryData = categoriesResponse.data.data || [];
+        // API returns array of strings, convert to objects if needed
+        const formattedCategories = Array.isArray(categoryData) && categoryData.length > 0
+          ? typeof categoryData[0] === 'string'
+            ? categoryData.map(name => ({ name, _id: name }))
+            : categoryData
+          : [];
+        setCategories(formattedCategories);
         
         // Fetch featured products
         const productsResponse = await productsAPI.getProducts({ limit: 6 });
