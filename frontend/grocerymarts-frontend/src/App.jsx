@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Orders from './pages/Orders';
 import Products from './pages/Products';
 import Register from './pages/Register';
+import Returns from './pages/Returns';
 import UserDashboard from './pages/UserDashboard';
 
 // Protected Route Component
@@ -117,6 +118,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Orders />
+                  </ProtectedRoute>
+                } 
+              />
+
+              <Route 
+                path="/returns" 
+                element={
+                  <ProtectedRoute>
+                    <Returns />
                   </ProtectedRoute>
                 } 
               />

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, User, LogOut, Settings, Package } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Settings, Package, RotateCcw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -46,6 +46,11 @@ const Layout = ({ children }) => {
             {isAuthenticated && (   // ✅ fixed
               <Link to="/orders" className="text-sm font-medium hover:text-primary transition-colors">
                 My Orders
+              </Link>
+            )}
+            {isAuthenticated && (   // ✅ fixed
+              <Link to="/returns" className="text-sm font-medium hover:text-primary transition-colors">
+                Returns
               </Link>
             )}
             {isAdmin && (   // ✅ fixed
@@ -93,6 +98,10 @@ const Layout = ({ children }) => {
                   <DropdownMenuItem onClick={() => navigate('/orders')}>
                     <Package className="mr-2 h-4 w-4" />
                     My Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/returns')}>
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Returns
                   </DropdownMenuItem>
                   {isAdmin && (   // ✅ fixed
                     <DropdownMenuItem onClick={() => navigate('/admin')}>

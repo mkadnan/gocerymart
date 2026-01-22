@@ -40,6 +40,7 @@ const orderRoutes = require('./routes/orders');
 const cartRoutes = require('./routes/cartRoutes');
 const userRoutes = require('./routes/users'); // ✅ add users routes
 const categoryRoutes = require('./routes/categories'); // ✅ add categories routes
+const returnRoutes = require('./routes/returns'); // ✅ add returns routes
 
 app.use('/api/auth', authRoutes);
 app.use('/api/otp', otpRoutes); // ✅ mount OTP routes
@@ -48,6 +49,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes); // ✅ mount users routes
 app.use('/api/categories', categoryRoutes); // ✅ mount categories routes
+app.use('/api/returns', returnRoutes); // ✅ mount returns routes
 
 // ---------------- Error Handling ----------------
 app.use((err, req, res, next) => {

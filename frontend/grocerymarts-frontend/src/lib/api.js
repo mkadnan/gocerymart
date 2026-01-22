@@ -96,5 +96,15 @@ export const categoriesAPI = {
   deleteCategory: (id) => api.delete(`/categories/${id}`),
 };
 
+// Returns API
+export const returnsAPI = {
+  createReturnRequest: (returnData) => api.post('/returns', returnData),
+  getUserReturns: (params = {}) => api.get('/returns', { params }),
+  getReturnRequest: (id) => api.get(`/returns/${id}`),
+  cancelReturnRequest: (id) => api.put(`/returns/${id}/cancel`),
+  getAllReturns: (params = {}) => api.get('/returns/admin/all', { params }),
+  updateReturnStatus: (id, data) => api.put(`/returns/${id}/status`, data),
+};
+
 export default api;
 
